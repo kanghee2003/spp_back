@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shinhan.spp.dao.SampleDao">
+  	<select id="tick" resultType="java.lang.String">
+		SELECT '1'
+	</select>
+
+	<select id="selectSample" parameterType="com.shinhan.spp.dto.in.SampleInDto" resultType="com.shinhan.spp.dto.out.SampleOutDto">
+		SELECT '1' AS value1, 1 AS value2, CURRENT_DATE  AS value3, CURRENT_TIMESTAMP::timestamp  AS value4
+	</select>
+</mapper>
