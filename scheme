@@ -1,0 +1,47 @@
+-- public.tb_com_grp_cd definition
+
+-- Drop table
+
+-- DROP TABLE public.tb_com_grp_cd;
+
+CREATE TABLE public.tb_com_grp_cd (
+	com_grp_cd_seq int4 DEFAULT nextval('tb_com_grp_cd_seq'::regclass) NOT NULL, -- 공통그룹코드순번
+	cm_grp_cd varchar(20) NOT NULL, -- 공통그룹코드
+	cm_grp_nm varchar(100) NULL, -- 공통그룹명
+	cm_grp_desc varchar(2000) NULL, -- 공통그룹설명
+	ref01 varchar(100) NULL,
+	ref02 varchar(100) NULL,
+	ref03 varchar(100) NULL,
+	ref04 varchar(100) NULL,
+	ref05 varchar(100) NULL,
+	ref06 varchar(100) NULL,
+	ref07 varchar(100) NULL,
+	ref08 varchar(100) NULL,
+	ref09 varchar(100) NULL,
+	ref10 varchar(100) NULL,
+	ref11 varchar(100) NULL,
+	ref12 varchar(100) NULL,
+	ref13 varchar(100) NULL,
+	ref14 varchar(100) NULL,
+	ref15 varchar(100) NULL,
+	use_flag bool NULL, -- 사용여부
+	rgst_user_id varchar(20) NOT NULL, -- 등록자ID
+	rgst_date_time timestamp NOT NULL, -- 등록일시
+	upt_user_id varchar(20) NOT NULL, -- 수정자ID
+	upt_date_time timestamp NOT NULL, -- 수정일시
+	CONSTRAINT tb_grp_com_cd_cmgrpcd_uk UNIQUE (cm_grp_cd),
+	CONSTRAINT tb_grp_com_cd_pk PRIMARY KEY (com_grp_cd_seq)
+);
+COMMENT ON TABLE public.tb_com_grp_cd IS '분류코드';
+
+-- Column comments
+
+COMMENT ON COLUMN public.tb_com_grp_cd.com_grp_cd_seq IS '공통그룹코드순번';
+COMMENT ON COLUMN public.tb_com_grp_cd.cm_grp_cd IS '공통그룹코드';
+COMMENT ON COLUMN public.tb_com_grp_cd.cm_grp_nm IS '공통그룹명';
+COMMENT ON COLUMN public.tb_com_grp_cd.cm_grp_desc IS '공통그룹설명';
+COMMENT ON COLUMN public.tb_com_grp_cd.use_flag IS '사용여부';
+COMMENT ON COLUMN public.tb_com_grp_cd.rgst_user_id IS '등록자ID';
+COMMENT ON COLUMN public.tb_com_grp_cd.rgst_date_time IS '등록일시';
+COMMENT ON COLUMN public.tb_com_grp_cd.upt_user_id IS '수정자ID';
+COMMENT ON COLUMN public.tb_com_grp_cd.upt_date_time IS '수정일시';

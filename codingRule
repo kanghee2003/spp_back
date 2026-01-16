@@ -1,0 +1,33 @@
+
+Backend 코딩 컨벤션
+
+1. API
+  - api는 기본적으로 /api로 시작되도록 작성하고 소문자로 작성
+  - api명은 되도록 rest규칙에 따라 계층에 1개의 단어로 작성하고 부득이 하게 2개이상의 단어가 사용되어야 할 경우 하이픈(-)을 사용
+2. 문서화는 기본적으로 Swagger를 이용
+   - Controller상단 @Tag로 작성 클래스 설명 명시
+   - Controller 내 메소드 @Operation로 메소드 설명 명시
+   - Dto상단 및 변수 @@Schema로 명시
+3. javaDoc
+  - Controller, Service, Dao 상단에 문서 설명및 @author 태그로 작성
+  - Dao 메소드는 전부 필수작성
+  - Service 메소드는 public은 필수, private은 추가적으로 설명이 필요할 경우 작성
+  - Dto는 Swagger @Schema어노테이션으로 변수에만 작성
+4. Dto
+  - Contoller에서 request와 response에서 사용되는 Dto클래스는 dto/in, dto/out 경로로 분리해서 생성
+  - request와 response이외에 개별 로직에서 필요할 경우 dto하위에 생성
+5. SQL
+  - select 호출 시 파라미터 갯수가 3개 이하일 경우 @Param태그로 개별 선언하여 호출(dto를 파라미터로 사용할 경우 가시성이 떨어짐)
+    ex) SampleOutDto select(@Param("param1") String param1, @Param2("param2") String param2, @Param3 String param3)
+  - 기본적으로 insert, update시는 테이블과 매칭되는 domain객체를 사용하고 추가파라미터가 필요한 경우는 @Param태그로 추가로 파라미터를 넘겨 호출
+    ex) void insertUserInfo(@Param("userInfo") UserInfo userInfo, @Param("etcField") String etcField)
+  - delete 호출시는 무조건 @Param태그로 개별 변수로 호출
+  	ex) void deleteSample(@Param("key") String key)
+7. Transaction
+  - 모든 Service public 메소드 상단에 @Transactional 명시
+  - 개별 Transaction이 필요할경우 @Transactional(propagation = Propagation.REQUIRES_NEW)로 명시
+8. etc
+  - 기본적으로 for문대신 lambda문법을 사용하여 개발
+  - 로직에서 수동으로 Exception발생 시 BusiniseException을 사용하여 throw
+  - api별 in/out dto는 분리사용
+  - dto간 상속 금지(상속은 domain만 상속가능)
