@@ -33,6 +33,14 @@ public interface SampleDao {
 
 
     List<CommonGrpCodeListDto> selectCommonGrpCodeList(@Param("searchText") String searchText) throws Exception;
+
+    Integer countCommonGrpCodeList(@Param("searchText") String searchText) throws Exception;
+
+    List<CommonGrpCodeListDto> selectCommonGrpCodeListPage(
+            @Param("searchText") String searchText,
+            @Param("offset") Integer offset,
+            @Param("limit") Integer limit
+    ) throws Exception;
     void insertCommonGrpCode(CommonGrpCode commonGrpCode) throws Exception;
     void updateCommonGrpCode(CommonGrpCode commonGrpCode) throws Exception;
     void deleteCommonGrpCode(@Param("comGrpCdSeq") Integer comGrpCdSeq) throws Exception;

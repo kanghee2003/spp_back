@@ -40,6 +40,46 @@
         order by com_grp_cd_seq
     </select>
 
+    <select id="countCommonGrpCodeList" resultType="java.lang.Integer" parameterType="java.lang.String">
+        SELECT COUNT(1)
+        FROM tb_com_grp_cd tcgc
+        WHERE 1=1
+        <if test="searchText != null">
+            AND (cm_grp_cd like concat('%',#{searchText},'%') or cm_grp_nm like concat('%',#{searchText},'%'))
+        </if>
+    </select>
+
+    <select id="selectCommonGrpCodeListPage" resultType="com.shinhan.spp.dto.out.CommonGrpCodeListDto">
+        SELECT com_grp_cd_seq ,
+               cm_grp_cd ,
+               cm_grp_nm ,
+               cm_grp_desc,
+               use_flag ,
+               ref01,
+               ref02,
+               ref03,
+               ref04,
+               ref05,
+               ref06,
+               ref07,
+               ref08,
+               ref09,
+               ref10,
+               ref11,
+               ref12,
+               ref13,
+               ref14,
+               ref15,
+               '2025-01-01' AS str_date
+        FROM tb_com_grp_cd tcgc
+        WHERE 1=1
+        <if test="searchText != null">
+            AND (cm_grp_cd like concat('%',#{searchText},'%') or cm_grp_nm like concat('%',#{searchText},'%'))
+        </if>
+        order by com_grp_cd_seq
+        OFFSET #{offset} LIMIT #{limit}
+    </select>
+
 
     <insert id="insertCommonGrpCode" parameterType="com.shinhan.spp.domain.CommonGrpCode">
         INSERT INTO tb_com_grp_cd

@@ -7,6 +7,7 @@ import com.shinhan.spp.dto.in.CommonCodeListParamDto;
 import com.shinhan.spp.dto.in.SampleInDto;
 import com.shinhan.spp.dto.out.CommonCodeListDto;
 import com.shinhan.spp.dto.out.CommonGrpCodeListDto;
+import com.shinhan.spp.dto.out.CommonGrpCodePageDto;
 import com.shinhan.spp.dto.out.SampleOutDto;
 import com.shinhan.spp.enums.IudType;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,23 @@ public class SampleService {
     @Transactional
     public List<CommonGrpCodeListDto> selectCommonGrpCodeList(String searchText) throws Exception {
         return sampleDao.selectCommonGrpCodeList(searchText);
+    }
+
+    @Transactional
+    public CommonGrpCodePageDto selectCommonGrpCodeListPage(String searchText, Integer page, Integer pageSize) throws Exception {
+        int safePage = (page == null || page < 1) ? 1 : page;
+        int safeSize = (pageSize == null || pageSize < 1) ? 10 : Math.min(pageSize, 200);
+
+        int offset = (safePage - 1) * safeSize;
+        Integer total = sampleDao.countCommonGrpCodeList(searchText);
+        List<CommonGrpCodeListDto> items = sampleDao.selectCommonGrpCodeListPage(searchText, offset, safeSize);
+
+        return CommonGrpCodePageDto.builder()
+                .items(items)
+                .page(safePage)
+                .pageSize(safeSize)
+                .totalCount(total == null ? 0 : total)
+                .build();
     }
 
 

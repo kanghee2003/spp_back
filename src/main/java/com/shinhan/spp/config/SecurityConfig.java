@@ -22,7 +22,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
             .requireCsrfProtectionMatcher(new CsrfRequireMatcher())
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(requestHandler) // ✅ 이 줄이 핵심
+            .csrfTokenRequestHandler(requestHandler)
         )
         .formLogin(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(authorize -> authorize
