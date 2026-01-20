@@ -1,7 +1,30 @@
-.gradle/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target
+!**/src/test/**/target
 build/
-out/
-*.iml
-.idea/
+bin/
+target/
+.project
+
+**/node_modules/
+.gradle/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.imi
+*.ipr
+*.lck
 *.log
-/gradle/wrapper/gradle-wrapper.jar
+*.local.*
+
+
+
+### OS ###
+*.DS_Store
+
+
+### REACT_APP ###
+/node_module
+/target
+
