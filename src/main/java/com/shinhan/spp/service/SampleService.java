@@ -10,6 +10,7 @@ import com.shinhan.spp.dto.out.CommonGrpCodeListDto;
 import com.shinhan.spp.dto.out.CommonGrpCodePageDto;
 import com.shinhan.spp.dto.out.SampleOutDto;
 import com.shinhan.spp.enums.IudType;
+import com.shinhan.spp.exception.custom.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -75,6 +76,8 @@ public class SampleService {
             commonGrpCode.setUptUserId("System");
             if (commonGrpCode.getIudType() == IudType.I) {
                 sampleDao.insertCommonGrpCode(commonGrpCode);
+                if(true)
+                    throw new BusinessException("XXX");
             } else if (commonGrpCode.getIudType() == IudType.U) {
                 sampleDao.updateCommonGrpCode(commonGrpCode);
             } else if (commonGrpCode.getIudType() == IudType.D) {

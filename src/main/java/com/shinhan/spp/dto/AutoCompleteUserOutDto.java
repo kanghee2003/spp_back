@@ -5,15 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * AutoComplete 무한스크롤(Mock) 조직 아이템 DTO
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MockAutoCompleteOrgOutDto {
+public class AutoCompleteUserOutDto {
     private String value;
+    private String userId;
+    private String gradeCd;
+    private String gradeNm;
     private String orgCd;
     private String orgNm;
+    private String telNo;
 }

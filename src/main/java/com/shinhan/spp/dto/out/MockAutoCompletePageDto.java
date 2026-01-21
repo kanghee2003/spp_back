@@ -1,6 +1,5 @@
 package com.shinhan.spp.dto.out;
 
-import com.shinhan.spp.dto.MockAutoCompleteUserOutDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

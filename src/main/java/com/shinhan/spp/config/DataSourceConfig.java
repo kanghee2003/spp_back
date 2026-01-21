@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ConditionalOnBean(DataSource.class)
 @EnableTransactionManagement
 @MapperScan(basePackages = "com.shinhan.spp.dao")
-@Profile({"dev", "prod"})
+@Profile({"local", "dev", "prod"})
 public class DataSourceConfig {
 
     @Bean("sqlSessionFactory")

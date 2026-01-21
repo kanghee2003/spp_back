@@ -1,4 +1,4 @@
-package com.shinhan.spp.api;
+package com.shinhan.spp.controller;
 
 import com.shinhan.spp.annotation.ResponseDataOnly;
 import com.shinhan.spp.domain.CommonGrpCode;
