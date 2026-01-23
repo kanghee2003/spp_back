@@ -19,7 +19,10 @@ app:
     allowed-origins:
       - "http://localhost:3000"
       - "http://127.0.0.1:3000"
-
+  editor:
+    image:
+      upload-dir: uploads/editor/images # 서버 경로에 맞춰서 수정필요
+      download-uri: /cm/editor/image/download/
 
 logging:
   config: classpath:logback-dev.xml

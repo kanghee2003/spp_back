@@ -11,6 +11,7 @@ spring:
     username: test
     password: 1234
 
+
 app:
   cors:
     allowed-origins:
@@ -18,6 +19,10 @@ app:
       - "http://127.0.0.1:3000"
   auth:
     user-header: "X-User-Id"
+  editor:
+    image:
+      upload-dir: uploads/editor/images
+      download-uri: /cm/editor/image/download/
 
 logging:
   config: classpath:logback-local.xml
