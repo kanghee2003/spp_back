@@ -158,6 +158,12 @@ public final class ExcelExporter {
         return new SheetArg<T>(name, rows, dtoClass, rgbColorizer, title);
     }
 
+    /** 타이틀 + RGB 행 배경 */
+    public static <T> SheetArg<T> sheetWithTitle(String name, List<T> rows, Class<T> dtoClass,
+                                                 TitleSpec title) {
+        return new SheetArg<T>(name, rows, dtoClass, null, title);
+    }
+
     // TitleSpec 팩토리
     public static TitleSpec title(String text) { return new TitleSpec(text); }
     public static TitleSpec title(String text, short fontPt, boolean bold) {

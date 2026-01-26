@@ -2,7 +2,9 @@ package com.shinhan.spp.controller;
 
 import com.shinhan.spp.annotation.ResponseDataOnly;
 import com.shinhan.spp.domain.CommonGrpCode;
+import com.shinhan.spp.dto.DetailDto;
 import com.shinhan.spp.dto.SalesDto;
+import com.shinhan.spp.dto.SummaryDto;
 import com.shinhan.spp.dto.out.CommonGrpCodeListDto;
 import com.shinhan.spp.dto.out.CommonGrpCodePageDto;
 import com.shinhan.spp.exception.custom.BusinessException;
@@ -79,22 +81,54 @@ public class SampleController {
         return null;
     }
 
-
-     /** 1) @ExcelSheetKey 값 기준 자동 분할 (서부/동부 등) */
-    @GetMapping("/excel/sales-by-hq")
-    public void byHq(HttpServletResponse resp) {
-        List<SalesDto> list = List.of(
-            new SalesDto("서부", "수지점", "김대리", LocalDate.now().minusDays(2), "A상품", 10, 12000L, 120000L),
-            new SalesDto("서부", "죽전점", "박과장", LocalDate.now().minusDays(1), "B상품", 5,  18000L,  90000L),
-            new SalesDto("동부", "잠실점", "이차장", LocalDate.now(),          "A상품", 3,  12000L,  36000L)
+    /** 단일 시트 예제 (SummaryDto 한 장) */
+    @GetMapping("/excel/one-sheet")
+    public void oneSheet(HttpServletResponse resp) {
+        List<SummaryDto> summary = List.of(
+            new SummaryDto("서부", "수지점",
+                    LocalDate.now().minusDays(7), LocalDate.now(),
+                    12, 1_230_000L),
+            new SummaryDto("동부", "잠실점",
+                    LocalDate.now().minusDays(7), LocalDate.now(),
+                    8,  980_000L)
         );
-        Workbook wb = ExcelExporter.export(list, SalesDto.class);
-        ExcelExporter.writeToResponse(wb, resp, "매출_본부별.xlsx");
+
+        Workbook wb = ExcelExporter.export(summary, SummaryDto.class);
+        ExcelExporter.writeToResponse(wb, resp, "one-sheet-summary.xlsx");
     }
 
-    /** 2) 리스트 2개 → 시트 2개 */
+    /** 리스트 2개 → 시트 2개 예제 (Summary + Detail) */
     @GetMapping("/excel/two-sheets")
     public void twoSheets(HttpServletResponse resp) {
+        List<SummaryDto> summary = List.of(
+            new SummaryDto("서부", "수지점",
+                    LocalDate.now().minusDays(7), LocalDate.now(),
+                    12, 1_230_000L),
+            new SummaryDto("동부", "잠실점",
+                    LocalDate.now().minusDays(7), LocalDate.now(),
+                    8,  980_000L)
+        );
+
+        List<DetailDto> detail = List.of(
+            new DetailDto("서부", "수지점",
+                    LocalDate.now().minusDays(2), "A상품", 10, 12_000L, 120_000L),
+            new DetailDto("서부", "수지점",
+                    LocalDate.now().minusDays(1), "B상품",  5, 18_000L,  90_000L),
+            new DetailDto("동부", "잠실점",
+                    LocalDate.now(), "A상품", 3, 12_000L, 36_000L)
+        );
+
+        Workbook wb = ExcelExporter.exportSheets(
+            ExcelExporter.sheet("요약", summary, SummaryDto.class),
+            ExcelExporter.sheet("상세", detail, DetailDto.class)
+        );
+        ExcelExporter.writeToResponse(wb, resp, "two-sheets-sample.xlsx");
+    }
+
+
+
+    @GetMapping("/excel/multiple-sheets")
+    public void multipleSheets(HttpServletResponse resp) {
         List<SalesDto> listA = List.of(
             new SalesDto("서부", "수지점", "김대리", LocalDate.now().minusDays(2), "A상품", 10, 12000L, 120000L)
         );
@@ -109,23 +143,11 @@ public class SampleController {
         );
 
 
-
         Workbook wb = ExcelExporter.exportSheets(
             ExcelExporter.sheet("요약", listA, SalesDto.class),
-            ExcelExporter.sheetWithTitle("상세", listB, SalesDto.class
-                                        ,  ExcelExporter.title("11월 매출 상세", (short)16, true)
-                                        ,row -> {
-                                                try {
-                                                    String g = (String) row.getClass().getMethod("getHq").invoke(row);
-                                                    if ("합계".equals(g)) return new java.awt.Color(218, 238, 243); // #DAEEF3 연하늘
-                                                    if ("소계".equals(g)) return new java.awt.Color(255, 242, 204); // #FFF2CC 연살구
-                                                    return null; // 일반 행은 무배경
-                                                } catch (Exception e) {
-                                                    return null;
-                                                }}
-            )
+            ExcelExporter.sheetWithTitle("상세", listB, SalesDto.class,  ExcelExporter.title("11월 매출 상세", (short)16, true))
         );
-        ExcelExporter.writeToResponse(wb, resp, "두개시트.xlsx");
+        ExcelExporter.writeToResponse(wb, resp, "multiple-sheets-sample.xlsx");
     }
 
 }

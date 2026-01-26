@@ -2,13 +2,17 @@ package com.shinhan.spp.dto;
 
 import com.shinhan.spp.annotation.ExcelColumn;
 import com.shinhan.spp.enums.HAlign;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SummaryDto {
     @ExcelColumn(header = "기본정보>본부", order = 1, widthChars = 10)
     private String hq;
