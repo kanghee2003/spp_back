@@ -7,7 +7,9 @@ import com.shinhan.spp.dto.SalesDto;
 import com.shinhan.spp.dto.SummaryDto;
 import com.shinhan.spp.dto.out.CommonGrpCodeListDto;
 import com.shinhan.spp.dto.out.CommonGrpCodePageDto;
+import com.shinhan.spp.dto.out.SampleFileUploadOutDto;
 import com.shinhan.spp.exception.custom.BusinessException;
+import com.shinhan.spp.service.SampleFileService;
 import com.shinhan.spp.service.SampleService;
 import com.shinhan.spp.util.ExcelExporter;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +17,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,6 +35,7 @@ import java.util.List;
 @RequestMapping("/api/sample")
 public class SampleController {
     private final SampleService sampleService;
+    private final SampleFileService sampleFileService;
 
     @Operation(summary = "tick", description = "tick")
     @GetMapping("/tick")
@@ -72,6 +78,17 @@ public class SampleController {
         sampleService.setCommonGrpCodeSave(commonCodeGrpList);
     }
 
+    @Operation(summary = "샘플 파일 업로드", description = "샘플 파일 업로드")
+    @PostMapping("/file/upload")
+    public SampleFileUploadOutDto uploadSampleFile(@RequestParam("file") MultipartFile file) throws Exception {
+        return sampleFileService.saveSampleFile(file);
+    }
+
+    @Operation(summary = "샘플 파일 다운로드", description = "샘플 파일 다운로드")
+    @GetMapping({"/file/download/{fileName:.+}"})
+    public ResponseEntity<Resource> downloadSampleFile(@PathVariable("fileName") String fileName) throws Exception {
+        return sampleFileService.getSampleFile(fileName);
+    }
 
     @Operation(summary = "error", description = "error")
     @GetMapping("/error")

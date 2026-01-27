@@ -19,6 +19,9 @@ app:
     allowed-origins:
       - "http://localhost:3000"
       - "http://127.0.0.1:3000"
+  sample:
+    file:
+      upload-dir: uploads/sample/files # 서버 경로에 맞춰서 수정필요
   editor:
     image:
       upload-dir: uploads/editor/images # 서버 경로에 맞춰서 수정필요
@@ -48,3 +51,6 @@ springdoc:
 secret:
   enc:
     salt: e5af6017-fc35-4dd0-9c9e-41b9968f3b0e
+
+jwt:
+  secret: "spp-dev-jwt-secret-2026-01-27-8f3a2b1c9d4e7f6a5c0b9a8d7e6f5a4b"

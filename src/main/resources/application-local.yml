@@ -19,6 +19,9 @@ app:
       - "http://127.0.0.1:3000"
   auth:
     user-header: "X-User-Id"
+  sample:
+    file:
+      upload-dir: uploads/sample/files
   editor:
     image:
       upload-dir: uploads/editor/images
@@ -47,3 +50,6 @@ springdoc:
 secret:
   enc:
     salt: e5af6017-fc35-4dd0-9c9e-41b9968f3b0e
+
+jwt:
+  secret: "spp-dev-jwt-secret-2026-01-27-8f3a2b1c9d4e7f6a5c0b9a8d7e6f5a4b"
