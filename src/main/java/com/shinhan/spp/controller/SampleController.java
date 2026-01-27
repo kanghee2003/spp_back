@@ -1,5 +1,6 @@
 package com.shinhan.spp.controller;
 
+import com.shinhan.spp.annotation.CurrentUser;
 import com.shinhan.spp.annotation.ResponseDataOnly;
 import com.shinhan.spp.domain.CommonGrpCode;
 import com.shinhan.spp.dto.DetailDto;
@@ -9,6 +10,7 @@ import com.shinhan.spp.dto.out.CommonGrpCodeListDto;
 import com.shinhan.spp.dto.out.CommonGrpCodePageDto;
 import com.shinhan.spp.dto.out.SampleFileUploadOutDto;
 import com.shinhan.spp.exception.custom.BusinessException;
+import com.shinhan.spp.model.UserContext;
 import com.shinhan.spp.service.SampleFileService;
 import com.shinhan.spp.service.SampleService;
 import com.shinhan.spp.util.ExcelExporter;
@@ -52,12 +54,12 @@ public class SampleController {
     @Operation(summary = "test3", description = "ResponseDataOnly 사용예시")
     @ResponseDataOnly
     @GetMapping("/test3")
-    public String test3()  {
+    public String test3(@CurrentUser UserContext user)  {
         return "1";
     }
 
     @GetMapping("/grp-list")
-    public List<CommonGrpCodeListDto> commonGrpCodeList(String searchText) throws Exception {
+    public List<CommonGrpCodeListDto> commonGrpCodeList(String searchText,@CurrentUser UserContext user) throws Exception {
         return sampleService.selectCommonGrpCodeList(searchText);
     }
 
@@ -66,6 +68,7 @@ public class SampleController {
      */
     @GetMapping("/grp-list-page")
     public CommonGrpCodePageDto commonGrpCodeListPage(
+            @CurrentUser UserContext user,
             @RequestParam(required = false) String searchText,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize

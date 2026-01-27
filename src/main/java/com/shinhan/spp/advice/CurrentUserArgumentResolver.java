@@ -1,9 +1,9 @@
 package com.shinhan.spp.advice;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shinhan.spp.annotation.CurrentUser;
 import com.shinhan.spp.model.UserContext;
-import com.shinhan.spp.provider.JwtTokenProvider;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
@@ -13,17 +13,16 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final JwtTokenProvider jwt;
-
-    public CurrentUserArgumentResolver(JwtTokenProvider jwt) {
-        this.jwt = jwt;
-    }
+    private static final ObjectMapper om = new ObjectMapper();
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -43,7 +42,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
 
         HttpServletRequest req = webRequest.getNativeRequest(HttpServletRequest.class);
         String authHeader = (req == null) ? null : req.getHeader("Authorization");
-        String token = JwtTokenProvider.resolveBearer(authHeader);
+        String token = resolveBearer(authHeader);
 
         if (token == null) {
             if (!required) return null;
@@ -51,17 +50,17 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         }
 
         try {
-            Claims claims = jwt.parseClaims(token);
+            Map<String, Object> claims = decodeJwtPayload(token);
 
             // 표준: sub = userId
-            String userId = claims.getSubject();
+            String userId = getString(claims, "sub");
             if (userId == null || userId.isBlank()) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token: subject missing");
             }
 
             // 너네 토큰 claim 키에 맞춰서 조정
-            String orgCd = claims.get("orgCd", String.class);
-            String userNm = claims.get("userNm", String.class);
+            String orgCd = getString(claims, "orgCd");
+            String userNm = getString(claims, "userNm");
 
             // roles 키도 너네 토큰에 맞춰 조정 ("roles" / "authorities" 등)
             List<String> roles = readRoles(claims, "roles");
@@ -71,13 +70,34 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
-            // 만료/서명오류 등 전부 401 처리
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token", e);
         }
     }
 
+    private static String resolveBearer(String authHeader) {
+        if (authHeader == null) return null;
+        if (!authHeader.startsWith("Bearer ")) return null;
+        return authHeader.substring(7).trim();
+    }
+
+    private static Map<String, Object> decodeJwtPayload(String token) throws Exception {
+        String[] parts = token.split("\\.");
+        if (parts.length < 2) throw new IllegalArgumentException("Invalid JWT");
+
+        String payload = parts[1];
+        byte[] decoded = Base64.getUrlDecoder().decode(payload);
+        String json = new String(decoded, StandardCharsets.UTF_8);
+
+        return om.readValue(json, new TypeReference<Map<String, Object>>() {});
+    }
+
+    private static String getString(Map<String, Object> claims, String key) {
+        Object v = claims.get(key);
+        return v == null ? null : v.toString();
+    }
+
     @SuppressWarnings("unchecked")
-    private static List<String> readRoles(Claims claims, String key) {
+    private static List<String> readRoles(Map<String, Object> claims, String key) {
         Object raw = claims.get(key);
         if (raw == null) return Collections.emptyList();
 
