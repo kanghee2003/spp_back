@@ -13,7 +13,7 @@ import com.shinhan.spp.exception.custom.BusinessException;
 import com.shinhan.spp.model.UserContext;
 import com.shinhan.spp.service.SampleFileService;
 import com.shinhan.spp.service.SampleService;
-import com.shinhan.spp.util.ExcelExporter;
+import com.shinhan.spp.util.excel.ExcelExporter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -83,8 +83,12 @@ public class SampleController {
 
     @Operation(summary = "샘플 파일 업로드", description = "샘플 파일 업로드")
     @PostMapping("/file/upload")
-    public SampleFileUploadOutDto uploadSampleFile(@RequestParam("file") MultipartFile file) throws Exception {
-        return sampleFileService.saveSampleFile(file);
+    public SampleFileUploadOutDto uploadSampleFile(
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Integer seq
+    ) throws Exception {
+        return sampleFileService.saveSampleFiles(files, title, seq);
     }
 
     @Operation(summary = "샘플 파일 다운로드", description = "샘플 파일 다운로드")

@@ -1,17 +1,10 @@
-// src/main/java/com/shinhan/spp/util/ExcelExporter.java
-package com.shinhan.spp.util;
+package com.shinhan.spp.util.excel;
 
-import com.shinhan.spp.annotation.ExcelColumn;
-
-import com.shinhan.spp.enums.HAlign;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFColor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -19,7 +12,6 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * ExcelExporter (POI 5.5.1 / SXSSF)
@@ -39,42 +31,6 @@ public final class ExcelExporter {
 
     /* ===== Public API ===== */
 
-    /** (RGB) 행 배경색 결정 훅. null이면 무배경 */
-    @FunctionalInterface
-    public interface RowRgbColorizer {
-        java.awt.Color color(Object row);
-    }
-
-    /** 첫 줄 타이틀 옵션 (null이면 타이틀 없음) — 배경은 기본적으로 적용하지 않음 */
-    public static final class TitleSpec {
-        final String text;
-        final java.awt.Color rgb;        // null이면 배경 없음(투명)
-        final short heightPoints;        // 행 높이 (pt)
-        final HorizontalAlignment align; // 정렬
-        final short fontPoints;          // 폰트 크기 (pt)
-        final boolean bold;              // 굵게
-
-        // 기본: 배경 없음, 20pt, 가운데, 14pt, Bold
-        public TitleSpec(String text) {
-            this(text, null, (short)20, HorizontalAlignment.CENTER, (short)14, true);
-        }
-        public TitleSpec(String text, java.awt.Color rgb) {
-            this(text, rgb, (short)20, HorizontalAlignment.CENTER, (short)14, true);
-        }
-        public TitleSpec(String text, java.awt.Color rgb, short heightPoints, HorizontalAlignment align) {
-            this(text, rgb, heightPoints, align, (short)14, true);
-        }
-        public TitleSpec(String text, java.awt.Color rgb, short heightPoints,
-                         HorizontalAlignment align, short fontPoints, boolean bold) {
-            this.text = text;
-            this.rgb = rgb; // null => 배경 없음
-            this.heightPoints = heightPoints;
-            this.align = (align == null ? HorizontalAlignment.CENTER : align);
-            this.fontPoints = (fontPoints <= 0 ? (short)14 : fontPoints);
-            this.bold = bold;
-        }
-    }
-
     /** 단일 시트 */
     public static <T> Workbook export(List<T> rows, Class<T> dtoClass) {
         SXSSFWorkbook wb = new SXSSFWorkbook(1000);
@@ -90,6 +46,7 @@ public final class ExcelExporter {
     }
 
     /** 복수 시트 */
+    @SafeVarargs
     public static Workbook exportSheets(SheetArg<?>... sheets) {
         SXSSFWorkbook wb = new SXSSFWorkbook(1000);
         wb.setCompressTempFiles(true);
@@ -127,23 +84,6 @@ public final class ExcelExporter {
     }
 
     /* ===== SheetArg / 팩토리 ===== */
-
-    public static final class SheetArg<T> {
-        final String sheetName;
-        final List<T> rows;
-        final Class<T> dtoClass;
-        final RowRgbColorizer rowRgbColorizer;   // 선택
-        final TitleSpec titleSpec;               // 선택(null=타이틀 없음)
-
-        private SheetArg(String sheetName, List<T> rows, Class<T> dtoClass,
-                         RowRgbColorizer rgbColorizer, TitleSpec titleSpec) {
-            this.sheetName = sheetName;
-            this.rows = rows;
-            this.dtoClass = dtoClass;
-            this.rowRgbColorizer = rgbColorizer;
-            this.titleSpec = titleSpec;
-        }
-    }
 
     public static <T> SheetArg<T> sheet(String name, List<T> rows, Class<T> dtoClass) {
         return new SheetArg<T>(name, rows, dtoClass, null, null);
@@ -296,7 +236,7 @@ public final class ExcelExporter {
         return prec <= 15;
     }
 
-    private static String decimalFormatPattern(int scale) {
+    static String decimalFormatPattern(int scale) { // Styles에서 사용
         int s = Math.max(0, Math.min(scale, 12));
         StringBuilder sb = new StringBuilder("#,##0");
         if (s > 0) { sb.append('.'); for (int i = 0; i < s; i++) sb.append('#'); }
@@ -347,240 +287,6 @@ public final class ExcelExporter {
         if (col == null || col.format == null) return false;
         String f = col.format.trim().toLowerCase(java.util.Locale.ROOT);
         return "time".equals(f) || f.contains("hh:mm");
-    }
-
-    /* ===== Models ===== */
-
-    private static final class ColumnPlan {
-        final List<ColumnMeta> columns;
-        private ColumnPlan(List<ColumnMeta> columns) { this.columns = columns; }
-
-        static <T> ColumnPlan from(Class<T> dtoClass) {
-            List<ColumnMeta> list = new ArrayList<>();
-            for (Field f : getAllFields(dtoClass)) {
-                if (!f.isAnnotationPresent(ExcelColumn.class)) continue;
-
-                ExcelColumn ec = f.getAnnotation(ExcelColumn.class);
-                ColumnMeta m = new ColumnMeta();
-                m.field = f;
-                m.headerPath = Arrays.stream(ec.header().split(">"))
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
-                        .collect(Collectors.toList());
-                m.order = ec.order();
-                m.widthChars = ec.widthChars();
-                m.format = ec.format() == null ? "" : ec.format().trim();
-                m.align = ec.align();
-                m.wrap = ec.wrap();
-                m.fieldPath = ec.fieldPath() == null ? "" : ec.fieldPath().trim();
-                list.add(m);
-            }
-            list.sort(Comparator.comparingInt(a -> a.order));
-            return new ColumnPlan(list);
-        }
-    }
-
-    private static final class ColumnMeta {
-        Field field;
-        List<String> headerPath;
-        int order;
-        int widthChars;
-        String format;
-        HAlign align;
-        boolean wrap;
-        String fieldPath;
-    }
-
-    private static final class HeaderLayout {
-        static final class CellSpec {
-            final String label; final int startCol; final int colSpan; final int rowSpan;
-            CellSpec(String label, int startCol, int colSpan, int rowSpan) {
-                this.label = label; this.startCol = startCol; this.colSpan = colSpan; this.rowSpan = rowSpan;
-            }
-        }
-        final int maxDepth;
-        final List<List<CellSpec>> rows;
-        HeaderLayout(int maxDepth, List<List<CellSpec>> rows) { this.maxDepth = maxDepth; this.rows = rows; }
-
-        static HeaderLayout from(List<ColumnMeta> cols) {
-            int n = cols.size();
-            int maxDepth = 1;
-            for (ColumnMeta c : cols) if (c.headerPath.size() > maxDepth) maxDepth = c.headerPath.size();
-
-            List<List<String>> labels = new ArrayList<>();
-            for (int l = 0; l < maxDepth; l++) {
-                labels.add(new ArrayList<>(Collections.nCopies(n, null)));
-            }
-            for (int c = 0; c < n; c++) {
-                List<String> path = cols.get(c).headerPath;
-                for (int l = 0; l < path.size(); l++) labels.get(l).set(c, path.get(l));
-            }
-
-            List<List<CellSpec>> out = new ArrayList<>();
-            for (int l = 0; l < maxDepth; l++) {
-                List<CellSpec> levelCells = new ArrayList<>();
-                int c = 0;
-                while (c < n) {
-                    String lab = labels.get(l).get(c);
-                    boolean terminal = (cols.get(c).headerPath.size() == l + 1);
-                    if (lab == null) { c++; continue; }
-                    int run = 1;
-                    while (c + run < n) {
-                        String lab2 = labels.get(l).get(c + run);
-                        boolean term2 = (cols.get(c + run).headerPath.size() == l + 1);
-                        if (!Objects.equals(lab2, lab) || term2 != terminal) break;
-                        run++;
-                    }
-                    int rowSpan = terminal ? (maxDepth - l) : 1;
-                    levelCells.add(new CellSpec(lab, c, run, rowSpan));
-                    c += run;
-                }
-                out.add(levelCells);
-            }
-            return new HeaderLayout(maxDepth, out);
-        }
-    }
-
-    /* ===== Styles ===== */
-
-    private static final class Styles {
-        final Workbook wb;
-        final DataFormat df;
-        final CellStyle header;
-        final Map<String, CellStyle> cache = new HashMap<>();
-        final Font font;
-        final Font fontBold;
-        final IdentityHashMap<CellStyle, CellStyle> wrapCache = new IdentityHashMap<>();
-
-        Styles(Workbook wb) {
-            this.wb = wb;
-            this.df = wb.createDataFormat();
-
-            font = wb.createFont();
-            font.setFontName("맑은 고딕");
-            font.setFontHeightInPoints((short)10);
-
-            fontBold = wb.createFont();
-            fontBold.setFontName("맑은 고딕");
-            fontBold.setFontHeightInPoints((short)10);
-            fontBold.setBold(true);
-
-            CellStyle h = wb.createCellStyle();
-            h.setVerticalAlignment(VerticalAlignment.CENTER);
-            h.setAlignment(HorizontalAlignment.CENTER);
-            h.setWrapText(true);
-            setBorderThin(h);
-
-            // 헤더 배경 RGB (POI 5.x 정석)
-            XSSFCellStyle xh = (XSSFCellStyle) h; // SXSSF도 XSSF 스타일 기반
-            xh.setFillForegroundColor(new XSSFColor(new java.awt.Color(230, 242, 255), new DefaultIndexedColorMap())); // #E6F2FF
-            h.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-            h.setFont(fontBold);
-            header = h;
-        }
-
-        CellStyle getTitleStyle(TitleSpec spec) {
-            String key = "title|"
-                    + (spec.rgb == null ? "null" : (spec.rgb.getRed()+"-"+spec.rgb.getGreen()+"-"+spec.rgb.getBlue()))
-                    + "|" + spec.align + "|" + spec.fontPoints + "|" + spec.bold;
-            if (cache.containsKey(key)) return cache.get(key);
-
-            XSSFCellStyle s = (XSSFCellStyle) wb.createCellStyle();
-            s.setVerticalAlignment(VerticalAlignment.CENTER);
-            s.setAlignment(spec.align);
-            s.setWrapText(false);
-
-            Font f = wb.createFont();
-            f.setFontName("맑은 고딕");
-            f.setBold(spec.bold);
-            f.setFontHeightInPoints(spec.fontPoints);
-            s.setFont(f);
-
-            if (spec.rgb != null) { // 배경은 지정한 경우에만
-                s.setFillForegroundColor(new XSSFColor(spec.rgb, new DefaultIndexedColorMap()));
-                s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            } else {
-                s.setFillPattern(FillPatternType.NO_FILL);
-            }
-
-            cache.put(key, s);
-            return s;
-        }
-
-        CellStyle getDataStyle(ColumnMeta col, String kind) {
-            String key = "base|" + col.align + "|" + col.wrap + "|" + (col.format == null || col.format.isEmpty() ? kind : col.format);
-            if (cache.containsKey(key)) return cache.get(key);
-
-            CellStyle s = wb.createCellStyle();
-            setBorderThin(s);
-            s.setVerticalAlignment(VerticalAlignment.CENTER);
-
-            switch (col.align) {
-                case CENTER: s.setAlignment(HorizontalAlignment.CENTER); break;
-                case RIGHT:  s.setAlignment(HorizontalAlignment.RIGHT);  break;
-                default:     s.setAlignment(HorizontalAlignment.LEFT);   break;
-            }
-
-            s.setWrapText(col.wrap);
-
-            String fmt = (col.format == null) ? "" : col.format;
-            if (fmt.isEmpty()) {
-                if (kind != null && kind.startsWith("decimal(") && kind.endsWith(")")) {
-                    int scale = 0;
-                    try { scale = Integer.parseInt(kind.substring("decimal(".length(), kind.length()-1)); } catch (Exception ignore) {}
-                    fmt = decimalFormatPattern(scale);
-                } else if ("time".equals(kind)) {
-                    fmt = "hh:mm:ss";
-                } else if ("number".equals(kind)) {
-                    fmt = "#,##0";
-                } else if ("date".equals(kind)) {
-                    fmt = "yyyy-mm-dd";
-                } else {
-                    fmt = "@";
-                }
-            }
-            s.setDataFormat(df.getFormat(fmt));
-            s.setFont(font);
-            cache.put(key, s);
-            return s;
-        }
-
-        CellStyle getDataStyleWithRgbFill(ColumnMeta col, String kind, java.awt.Color rgb) {
-            if (rgb == null) return getDataStyle(col, kind);
-            String key = "rgb|" + rgb.getRed()+"-"+rgb.getGreen()+"-"+rgb.getBlue()
-                    + "|" + col.align + "|" + col.wrap + "|" + (col.format == null || col.format.isEmpty() ? kind : col.format);
-            if (cache.containsKey(key)) return cache.get(key);
-
-            CellStyle base = getDataStyle(col, kind);
-            XSSFCellStyle s = (XSSFCellStyle) wb.createCellStyle();
-            s.cloneStyleFrom(base);
-            s.setFillForegroundColor(new XSSFColor(rgb, new DefaultIndexedColorMap()));
-            s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-            cache.put(key, s);
-            return s;
-        }
-
-        CellStyle wrapVariant(CellStyle base) {
-            if (base.getWrapText()) return base;
-
-            CellStyle cached = wrapCache.get(base);
-            if (cached != null) return cached;
-
-            CellStyle s = wb.createCellStyle();
-            s.cloneStyleFrom(base);
-            s.setWrapText(true);
-            wrapCache.put(base, s);
-            return s;
-        }
-
-        private static void setBorderThin(CellStyle s) {
-            s.setBorderTop(BorderStyle.THIN);
-            s.setBorderBottom(BorderStyle.THIN);
-            s.setBorderLeft(BorderStyle.THIN);
-            s.setBorderRight(BorderStyle.THIN);
-        }
     }
 
     /* ===== Reflection & write ===== */
@@ -773,7 +479,7 @@ public final class ExcelExporter {
         return null;
     }
 
-    private static List<Field> getAllFields(Class<?> c) {
+    static List<Field> getAllFields(Class<?> c) { // ColumnPlan에서 사용
         List<Field> out = new ArrayList<>();
         for (Class<?> k = c; k != null && k != Object.class; k = k.getSuperclass()) {
             out.addAll(Arrays.asList(k.getDeclaredFields()));

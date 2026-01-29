@@ -5,15 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SampleFileUploadOutDto {
-    private String title;
-    private Integer seq;
-    private Integer fileCount;
-    private List<SampleFileUploadItemOutDto> files;
+public class SampleFileUploadItemOutDto {
+    private String originalName;
+    private String storedName;
+    private Long size;
 }

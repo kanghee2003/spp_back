@@ -14,10 +14,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
@@ -51,21 +48,13 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
 
         try {
             Map<String, Object> claims = decodeJwtPayload(token);
+            UserContext user = om.convertValue(claims, UserContext.class);
 
-            // 표준: sub = userId
-            String userId = getString(claims, "sub");
-            if (userId == null || userId.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token: subject missing");
+            if (user.userId() == null || user.userId().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token: sub missing");
             }
 
-            // 너네 토큰 claim 키에 맞춰서 조정
-            String orgCd = getString(claims, "orgCd");
-            String userNm = getString(claims, "userNm");
-
-            // roles 키도 너네 토큰에 맞춰 조정 ("roles" / "authorities" 등)
-            List<String> roles = readRoles(claims, "roles");
-
-            return new UserContext(userId, orgCd, userNm, roles);
+            return user;
 
         } catch (ResponseStatusException e) {
             throw e;
@@ -82,49 +71,21 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
 
     private static Map<String, Object> decodeJwtPayload(String token) throws Exception {
         String[] parts = token.split("\\.");
-        if (parts.length < 2) throw new IllegalArgumentException("Invalid JWT");
+        if (parts.length < 2) throw new IllegalArgumentException("Invalid JWT: missing parts");
 
-        String payload = parts[1];
+        String payload = parts[1].trim();
+
+        payload = padBase64Url(payload);
+
         byte[] decoded = Base64.getUrlDecoder().decode(payload);
         String json = new String(decoded, StandardCharsets.UTF_8);
 
         return om.readValue(json, new TypeReference<Map<String, Object>>() {});
     }
 
-    private static String getString(Map<String, Object> claims, String key) {
-        Object v = claims.get(key);
-        return v == null ? null : v.toString();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<String> readRoles(Map<String, Object> claims, String key) {
-        Object raw = claims.get(key);
-        if (raw == null) return Collections.emptyList();
-
-        // 1) JSON 배열: ["ROLE_USER","ROLE_ADMIN"]
-        if (raw instanceof List<?> list) {
-            List<String> out = new ArrayList<>();
-            for (Object o : list) {
-                if (o != null) out.add(o.toString());
-            }
-            return out;
-        }
-
-        // 2) 콤마 문자열: "ROLE_USER,ROLE_ADMIN"
-        String s = raw.toString().trim();
-        if (s.isEmpty()) return Collections.emptyList();
-
-        if (s.contains(",")) {
-            String[] arr = s.split(",");
-            List<String> out = new ArrayList<>();
-            for (String r : arr) {
-                String v = r.trim();
-                if (!v.isEmpty()) out.add(v);
-            }
-            return out;
-        }
-
-        // 3) 단일 문자열: "ROLE_USER"
-        return List.of(s);
+    private static String padBase64Url(String v) {
+        int mod = v.length() % 4;
+        if (mod == 0) return v;
+        return v + "====".substring(mod); // 1->"===", 2->"==", 3->"="
     }
 }

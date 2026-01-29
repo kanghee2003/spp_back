@@ -1,5 +1,6 @@
 package com.shinhan.spp.service;
 
+import com.shinhan.spp.dto.out.SampleFileUploadItemOutDto;
 import com.shinhan.spp.dto.out.SampleFileUploadOutDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -16,6 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -28,13 +31,28 @@ public class SampleFileService {
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
     }
 
-    public SampleFileUploadOutDto saveSampleFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
+    public SampleFileUploadOutDto saveSampleFiles(List<MultipartFile> files, String title, Integer seq) throws IOException {
+        if (files == null || files.isEmpty() || files.stream().allMatch(f -> f == null || f.isEmpty())) {
             throw new IllegalArgumentException("파일이 없습니다.");
         }
 
         Files.createDirectories(uploadDir);
 
+        List<SampleFileUploadItemOutDto> saved = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) continue;
+            saved.add(saveOne(file));
+        }
+
+        return SampleFileUploadOutDto.builder()
+                .title(title)
+                .seq(seq)
+                .fileCount(saved.size())
+                .files(saved)
+                .build();
+    }
+
+    private SampleFileUploadItemOutDto saveOne(MultipartFile file) throws IOException {
         String originalName = file.getOriginalFilename();
         String ext = findExt(originalName);
         String storedName = UUID.randomUUID().toString().replace("-", "") + ext;
@@ -48,7 +66,7 @@ public class SampleFileService {
             Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        return SampleFileUploadOutDto.builder()
+        return SampleFileUploadItemOutDto.builder()
                 .originalName(originalName)
                 .storedName(storedName)
                 .size(file.getSize())
