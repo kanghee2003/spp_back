@@ -11,24 +11,28 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class EditorService {
+    private static final DateTimeFormatter FORMAT_YM = DateTimeFormatter.ofPattern("yyyyMM");
+    private static final Pattern RELATIVE_PATH_PATTERN = Pattern.compile("^\\d{6}/[0-9a-fA-F]{32}(\\.[a-zA-Z0-9]{1,10})?$");
 
-    private final Path uploadDir;
-    private final String downloadUri;
+    private final Path uploadDir;      // base dir
+    private final String downloadUri;  // base uri (끝에 / 붙여서 쓰는걸 권장)
 
-
-    public EditorService(@Value("${app.editor.image.upload-dir}") String uploadDir, @Value("${app.editor.image.download-uri}") String downloadUri) {
+    public EditorService(
+            @Value("${app.editor.image.upload-dir}") String uploadDir,
+            @Value("${app.editor.image.download-uri}") String downloadUri
+    ) {
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
-        this.downloadUri = downloadUri;
+        this.downloadUri = normalizeBaseUri(downloadUri);
     }
 
     public EditorImageUploadOutDto saveEditorImage(MultipartFile file) throws IOException {
@@ -41,13 +45,16 @@ public class EditorService {
             throw new IllegalArgumentException("이미지 파일만 다운로드 가능합니다.");
         }
 
-        Files.createDirectories(uploadDir);
+        String ym = LocalDate.now().format(FORMAT_YM);
+        Path uploadTargetDir = uploadDir.resolve(ym).normalize();
+
+        Files.createDirectories(uploadTargetDir);
 
         String originalName = file.getOriginalFilename();
         String ext = findExt(originalName);
         String storedName = UUID.randomUUID().toString().replace("-", "") + ext;
 
-        Path target = uploadDir.resolve(storedName).normalize();
+        Path target = uploadTargetDir.resolve(storedName).normalize();
         if (!target.startsWith(uploadDir)) {
             throw new IllegalArgumentException("이미지 경로가 올바르지 않습니다.");
         }
@@ -56,7 +63,8 @@ public class EditorService {
             Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        String url = downloadUri + storedName;
+        String relativePath = ym + "/" + storedName;
+        String url = downloadUri + relativePath;
 
         return EditorImageUploadOutDto.builder()
                 .url(url)
@@ -66,8 +74,8 @@ public class EditorService {
                 .build();
     }
 
-    public ResponseEntity<Resource> getEditorImage(String fileName) throws IOException {
-        Path filePath = resolvePath(fileName);
+    public ResponseEntity<Resource> getEditorImage(String relativePath) throws IOException {
+        Path filePath = resolvePath(relativePath);
 
         if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
             return ResponseEntity.notFound().build();
@@ -76,8 +84,10 @@ public class EditorService {
         Resource resource = toResource(filePath);
         MediaType mediaType = MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM);
 
+        String onlyName = filePath.getFileName() != null ? filePath.getFileName().toString() : relativePath;
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + sanitizeFilename(fileName) + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + sanitizeFilename(onlyName) + "\"")
                 .contentType(mediaType)
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic())
                 .body(resource);
@@ -91,11 +101,23 @@ public class EditorService {
         String ext = n.substring(idx).toLowerCase(Locale.ROOT);
         // 너무 긴 확장자 방지
         if (ext.length() > 10) return "";
+        // 확장자에 이상한 문자 섞인 경우 차단 (점 포함)
+        if (!ext.matches("^\\.[a-z0-9]{1,10}$")) return "";
         return ext;
     }
 
-    private Path resolvePath(String fileName) {
-        Path target = uploadDir.resolve(fileName).normalize();
+    private Path resolvePath(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) {
+            throw new IllegalArgumentException("이미지 경로가 올바르지 않습니다.");
+        }
+
+        String normalized = relativePath.replace('\\', '/');
+
+        if (!RELATIVE_PATH_PATTERN.matcher(normalized).matches()) {
+            throw new IllegalArgumentException("이미지 경로가 올바르지 않습니다.");
+        }
+
+        Path target = uploadDir.resolve(normalized).normalize();
         if (!target.startsWith(uploadDir)) {
             throw new IllegalArgumentException("이미지 경로가 올바르지 않습니다.");
         }
@@ -108,5 +130,11 @@ public class EditorService {
 
     private String sanitizeFilename(String name) {
         return name == null ? "" : name.replaceAll("[\\r\\n\\\\\"]", "_");
+    }
+
+    private String normalizeBaseUri(String uri) {
+        if (uri == null) return "";
+        String u = uri.trim();
+        return u.endsWith("/") ? u : u + "/";
     }
 }
