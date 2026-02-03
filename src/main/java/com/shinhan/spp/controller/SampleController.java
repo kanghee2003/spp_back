@@ -6,12 +6,12 @@ import com.shinhan.spp.domain.CommonGrpCode;
 import com.shinhan.spp.dto.DetailDto;
 import com.shinhan.spp.dto.SalesDto;
 import com.shinhan.spp.dto.SummaryDto;
-import com.shinhan.spp.dto.out.CommonGrpCodeListDto;
-import com.shinhan.spp.dto.out.CommonGrpCodePageDto;
-import com.shinhan.spp.dto.out.SampleFileUploadOutDto;
+import com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto;
+import com.shinhan.spp.dto.cm.out.CommonGrpCodePageDto;
+import com.shinhan.spp.dto.cm.out.FileUploadOutDto;
 import com.shinhan.spp.exception.custom.BusinessException;
 import com.shinhan.spp.model.UserContext;
-import com.shinhan.spp.service.SampleFileService;
+import com.shinhan.spp.service.cm.FileService;
 import com.shinhan.spp.service.SampleService;
 import com.shinhan.spp.util.excel.ExcelExporter;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,10 +34,10 @@ import java.util.List;
 @Tag(name = "SampleController", description = "샘플 API 컨트롤러")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/sample")
+@RequestMapping("/sample")
 public class SampleController {
     private final SampleService sampleService;
-    private final SampleFileService sampleFileService;
+    private final FileService fileService;
 
     @Operation(summary = "tick", description = "tick")
     @GetMapping("/tick")
@@ -83,19 +83,20 @@ public class SampleController {
 
     @Operation(summary = "샘플 파일 업로드", description = "샘플 파일 업로드")
     @PostMapping("/file/upload")
-    public SampleFileUploadOutDto uploadSampleFile(
+    public FileUploadOutDto uploadSampleFile(
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Integer seq
     ) throws Exception {
-        return sampleFileService.saveSampleFiles(files, title, seq);
+        return fileService.saveFiles(files, title, seq);
     }
 
     @Operation(summary = "샘플 파일 다운로드", description = "샘플 파일 다운로드")
-    @GetMapping({"/file/download/{fileName:.+}"})
-    public ResponseEntity<Resource> downloadSampleFile(@PathVariable("fileName") String fileName) throws Exception {
-        return sampleFileService.getSampleFile(fileName);
+    @GetMapping({"/file/download/{fileId}"})
+    public ResponseEntity<Resource> downloadSampleFile(@PathVariable("fileId") String fileId) throws Exception {
+        return fileService.getFile(fileId);
     }
+
 
     @Operation(summary = "error", description = "error")
     @GetMapping("/error")

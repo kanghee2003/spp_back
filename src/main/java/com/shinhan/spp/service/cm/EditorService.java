@@ -1,6 +1,6 @@
-package com.shinhan.spp.service;
+package com.shinhan.spp.service.cm;
 
-import com.shinhan.spp.dto.out.EditorImageUploadOutDto;
+import com.shinhan.spp.dto.cm.out.EditorImageUploadOutDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -24,8 +24,8 @@ public class EditorService {
     private static final DateTimeFormatter FORMAT_YM = DateTimeFormatter.ofPattern("yyyyMM");
     private static final Pattern RELATIVE_PATH_PATTERN = Pattern.compile("^\\d{6}/[0-9a-fA-F]{32}(\\.[a-zA-Z0-9]{1,10})?$");
 
-    private final Path uploadDir;      // base dir
-    private final String downloadUri;  // base uri (끝에 / 붙여서 쓰는걸 권장)
+    private final Path uploadDir;
+    private final String downloadUri;
 
     public EditorService(
             @Value("${app.editor.image.upload-dir}") String uploadDir,

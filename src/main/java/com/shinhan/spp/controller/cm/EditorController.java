@@ -1,7 +1,7 @@
-package com.shinhan.spp.controller;
+package com.shinhan.spp.controller.cm;
 
-import com.shinhan.spp.dto.out.EditorImageUploadOutDto;
-import com.shinhan.spp.service.EditorService;
+import com.shinhan.spp.dto.cm.out.EditorImageUploadOutDto;
+import com.shinhan.spp.service.cm.EditorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

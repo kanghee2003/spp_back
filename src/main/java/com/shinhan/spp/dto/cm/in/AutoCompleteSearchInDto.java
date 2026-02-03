@@ -1,4 +1,4 @@
-package com.shinhan.spp.dto.out;
+package com.shinhan.spp.dto.cm.in;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SampleFileUploadItemOutDto {
-    private String originalName;
-    private String storedName;
-    private Long size;
+public class AutoCompleteSearchInDto {
+    private String query;
+    private Integer cursor;
+    private Integer size;
 }

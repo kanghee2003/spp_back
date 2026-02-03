@@ -1,4 +1,4 @@
-package com.shinhan.spp.dto;
+package com.shinhan.spp.dto.cm;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

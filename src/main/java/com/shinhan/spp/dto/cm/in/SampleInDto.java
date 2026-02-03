@@ -1,4 +1,4 @@
-package com.shinhan.spp.dto.in;
+package com.shinhan.spp.dto.cm.in;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

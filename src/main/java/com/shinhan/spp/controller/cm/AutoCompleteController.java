@@ -1,9 +1,9 @@
-package com.shinhan.spp.controller;
+package com.shinhan.spp.controller.cm;
 
-import com.shinhan.spp.dto.AutoCompleteOrgOutDto;
-import com.shinhan.spp.dto.AutoCompleteUserOutDto;
-import com.shinhan.spp.dto.in.AutoCompleteSearchInDto;
-import com.shinhan.spp.dto.out.MockAutoCompletePageDto;
+import com.shinhan.spp.dto.cm.AutoCompleteOrgOutDto;
+import com.shinhan.spp.dto.cm.AutoCompleteUserOutDto;
+import com.shinhan.spp.dto.cm.in.AutoCompleteSearchInDto;
+import com.shinhan.spp.dto.cm.out.MockAutoCompletePageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;

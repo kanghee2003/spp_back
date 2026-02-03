@@ -5,12 +5,12 @@
 		SELECT '1'
 	</select>
 
-	<select id="selectSample" parameterType="com.shinhan.spp.dto.in.SampleInDto" resultType="com.shinhan.spp.dto.out.SampleOutDto">
+	<select id="selectSample" parameterType="com.shinhan.spp.dto.cm.in.SampleInDto" resultType="com.shinhan.spp.dto.cm.out.SampleOutDto">
 		SELECT '1' AS value1, 1 AS value2, CURRENT_DATE  AS value3, CURRENT_TIMESTAMP::timestamp  AS value4
 	</select>
 
 
-    <select id="selectCommonGrpCodeList" resultType="com.shinhan.spp.dto.out.CommonGrpCodeListDto" parameterType="java.lang.String">
+    <select id="selectCommonGrpCodeList" resultType="com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto" parameterType="java.lang.String">
         SELECT com_grp_cd_seq ,
                cm_grp_cd ,
                cm_grp_nm ,
@@ -49,7 +49,7 @@
         </if>
     </select>
 
-    <select id="selectCommonGrpCodeListPage" resultType="com.shinhan.spp.dto.out.CommonGrpCodeListDto">
+    <select id="selectCommonGrpCodeListPage" resultType="com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto">
         SELECT com_grp_cd_seq ,
                cm_grp_cd ,
                cm_grp_nm ,
@@ -172,7 +172,7 @@
         WHERE com_grp_cd_seq=#{comGrpCdSeq}
     </delete>
 
-    <select id="selectCommonCodeList" resultType="com.shinhan.spp.dto.out.CommonCodeListDto" parameterType="com.shinhan.spp.dto.in.CommonCodeListParamDto">
+    <select id="selectCommonCodeList" resultType="com.shinhan.spp.dto.cm.out.CommonCodeListDto" parameterType="com.shinhan.spp.dto.cm.in.CommonCodeListParamDto">
         SELECT tcu.com_cd_seq,
                tcu.com_grp_cd_seq,
                tcgc.cm_grp_cd,

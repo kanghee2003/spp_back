@@ -2,11 +2,11 @@ package com.shinhan.spp.dao;
 
 import com.shinhan.spp.domain.CommonCode;
 import com.shinhan.spp.domain.CommonGrpCode;
-import com.shinhan.spp.dto.in.CommonCodeListParamDto;
-import com.shinhan.spp.dto.in.SampleInDto;
-import com.shinhan.spp.dto.out.CommonCodeListDto;
-import com.shinhan.spp.dto.out.CommonGrpCodeListDto;
-import com.shinhan.spp.dto.out.SampleOutDto;
+import com.shinhan.spp.dto.cm.in.CommonCodeListParamDto;
+import com.shinhan.spp.dto.cm.in.SampleInDto;
+import com.shinhan.spp.dto.cm.out.CommonCodeListDto;
+import com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto;
+import com.shinhan.spp.dto.cm.out.SampleOutDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

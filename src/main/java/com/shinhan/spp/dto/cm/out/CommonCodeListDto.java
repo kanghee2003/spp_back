@@ -1,4 +1,4 @@
-package com.shinhan.spp.dto.out;
+package com.shinhan.spp.dto.cm.out;
 
 import lombok.Getter;
 import lombok.Setter;

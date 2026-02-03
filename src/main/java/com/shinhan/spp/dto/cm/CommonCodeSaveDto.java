@@ -1,4 +1,4 @@
-package com.shinhan.spp.dto;
+package com.shinhan.spp.dto.cm;
 
 
 import com.shinhan.spp.domain.CommonCode;

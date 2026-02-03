@@ -1,4 +1,4 @@
-package com.shinhan.spp.dto.out;
+package com.shinhan.spp.dto.cm.out;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,9 +11,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SampleFileUploadOutDto {
+public class FileUploadOutDto {
     private String title;
     private Integer seq;
     private Integer fileCount;
-    private List<SampleFileUploadItemOutDto> files;
+    private List<FileUploadItemOutDto> files;
 }
