@@ -5,6 +5,10 @@
 		SELECT '1'
 	</select>
 
+    <select id="selectUserInfo" resultType="com.shinhan.spp.domain.UserInfo" >
+         select * from tb_user Limit 1
+    </select>
+
 	<select id="selectSample" parameterType="com.shinhan.spp.dto.cm.in.SampleInDto" resultType="com.shinhan.spp.dto.cm.out.SampleOutDto">
 		SELECT '1' AS value1, 1 AS value2, CURRENT_DATE  AS value3, CURRENT_TIMESTAMP::timestamp  AS value4
 	</select>

@@ -1,6 +1,6 @@
 package com.shinhan.spp.controller;
 
-import com.shinhan.spp.annotation.CurrentUser;
+import com.shinhan.spp.annotation.UserInfo;
 import com.shinhan.spp.annotation.ResponseDataOnly;
 import com.shinhan.spp.domain.CommonGrpCode;
 import com.shinhan.spp.dto.DetailDto;
@@ -15,6 +15,7 @@ import com.shinhan.spp.service.cm.FileService;
 import com.shinhan.spp.service.SampleService;
 import com.shinhan.spp.util.excel.ExcelExporter;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,14 @@ public class SampleController {
         return sampleService.tick();
     }
 
+    @ResponseDataOnly
+    @Operation(summary = "tick", description = "tick")
+    @GetMapping("/user")
+    public com.shinhan.spp.domain.UserInfo user() {
+        return sampleService.selectUserInfo();
+    }
+
+
     @Operation(summary = "test2", description = "test2")
     @GetMapping("/test2")
     public String test2() {
@@ -54,12 +63,32 @@ public class SampleController {
     @Operation(summary = "test3", description = "ResponseDataOnly 사용예시")
     @ResponseDataOnly
     @GetMapping("/test3")
-    public String test3(@CurrentUser UserContext user)  {
+    public String test3(@Parameter(hidden = true) @UserInfo UserContext user)  {
         return "1";
     }
 
+
+    @Operation(summary = "user context evict sample", description = "권한/조직 변경 후 캐시 evict signal 전파 샘플")
+    @PostMapping("/user-context/evict")
+    public void userContextEvictSample(
+            @RequestBody(required = false) UserContextEvictSampleReq body,
+            @UserInfo UserContext user
+    ) {
+        String userId = (body != null && body.userId() != null && !body.userId().trim().isEmpty())
+                ? body.userId().trim()
+                : (user == null ? null : user.userId());
+
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new BusinessException("userId가 없습니다.");
+        }
+
+        sampleService.changeEvictUserContextCache(userId);
+    }
+
+    public record UserContextEvictSampleReq(String userId) {}
+
     @GetMapping("/grp-list")
-    public List<CommonGrpCodeListDto> commonGrpCodeList(String searchText,@CurrentUser UserContext user) throws Exception {
+    public List<CommonGrpCodeListDto> commonGrpCodeList(String searchText) throws Exception {
         return sampleService.selectCommonGrpCodeList(searchText);
     }
 
@@ -68,7 +97,7 @@ public class SampleController {
      */
     @GetMapping("/grp-list-page")
     public CommonGrpCodePageDto commonGrpCodeListPage(
-            @CurrentUser UserContext user,
+            @UserInfo UserContext user,
             @RequestParam(required = false) String searchText,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize

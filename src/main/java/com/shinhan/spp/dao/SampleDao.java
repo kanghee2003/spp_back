@@ -2,6 +2,7 @@ package com.shinhan.spp.dao;
 
 import com.shinhan.spp.domain.CommonCode;
 import com.shinhan.spp.domain.CommonGrpCode;
+import com.shinhan.spp.domain.UserInfo;
 import com.shinhan.spp.dto.cm.in.CommonCodeListParamDto;
 import com.shinhan.spp.dto.cm.in.SampleInDto;
 import com.shinhan.spp.dto.cm.out.CommonCodeListDto;
@@ -23,6 +24,11 @@ public interface SampleDao {
      * @return 리턴값
      */
     String tick();
+
+
+
+    UserInfo selectUserInfo(String userId);
+
 
     /**
      * 수행내용

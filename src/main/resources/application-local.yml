@@ -27,6 +27,12 @@ app:
     image:
       upload-dir: uploads/editor/images
       download-uri: /cm/editor/image/download/
+  internal:
+    nodes:
+      - "http://10.0.0.1:8080"
+      - "http://10.0.0.2:8080"
+    evict-uri: /internal/user-context/evict
+    token: "8f3c9c2e-7a6b-4e9a-9f91-2a6c7c8f4b12"
 
 logging:
   config: classpath:logback-local.xml

@@ -1,7 +1,8 @@
 package com.shinhan.spp.config;
 
-import com.shinhan.spp.advice.CurrentUserArgumentResolver;
+import com.shinhan.spp.advice.UserArgumentResolver;
 import com.shinhan.spp.interceptor.AuthenticationInterceptor;
+import com.shinhan.spp.service.SampleService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -13,8 +14,11 @@ import java.util.List;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final AuthenticationInterceptor authenticationInterceptor;
-    public WebMvcConfig(AuthenticationInterceptor authenticationInterceptor) {
+    private final SampleService sampleService;
+
+    public WebMvcConfig(AuthenticationInterceptor authenticationInterceptor, SampleService sampleService) {
         this.authenticationInterceptor = authenticationInterceptor;
+        this.sampleService = sampleService;
     }
 
 
@@ -27,6 +31,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new CurrentUserArgumentResolver());
+        resolvers.add(new UserArgumentResolver(sampleService));
     }
 }
