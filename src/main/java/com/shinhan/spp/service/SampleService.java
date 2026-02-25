@@ -5,6 +5,7 @@ import com.shinhan.spp.domain.CommonGrpCode;
 import com.shinhan.spp.domain.UserInfo;
 import com.shinhan.spp.dto.cm.CommonCodeSaveDto;
 import com.shinhan.spp.dto.cm.in.CommonCodeListParamDto;
+import com.shinhan.spp.dto.cm.in.CommonCodeSearchDto;
 import com.shinhan.spp.dto.cm.in.SampleInDto;
 import com.shinhan.spp.dto.cm.out.CommonCodeListDto;
 import com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto;
@@ -13,6 +14,8 @@ import com.shinhan.spp.dto.cm.out.SampleOutDto;
 import com.shinhan.spp.enums.IudType;
 import com.shinhan.spp.exception.custom.BusinessException;
 import com.shinhan.spp.internal.service.UserContextEvictService;
+import com.shinhan.spp.model.PageRequest;
+import com.shinhan.spp.model.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -80,20 +83,11 @@ public class SampleService {
     }
 
     @Transactional
-    public CommonGrpCodePageDto selectCommonGrpCodeListPage(String searchText, Integer page, Integer pageSize) throws Exception {
-        int safePage = (page == null || page < 1) ? 1 : page;
-        int safeSize = (pageSize == null || pageSize < 1) ? 10 : Math.min(pageSize, 200);
+    public PageResponse<List<CommonGrpCodeListDto>> selectCommonGrpCodeListPage(CommonCodeSearchDto param) throws Exception {
+        Integer total = sampleDao.countCommonGrpCodeList(param.getSearchText());
+        List<CommonGrpCodeListDto> items = sampleDao.selectCommonGrpCodeListPage(param);
 
-        int offset = (safePage - 1) * safeSize;
-        Integer total = sampleDao.countCommonGrpCodeList(searchText);
-        List<CommonGrpCodeListDto> items = sampleDao.selectCommonGrpCodeListPage(searchText, offset, safeSize);
-
-        return CommonGrpCodePageDto.builder()
-                .items(items)
-                .page(safePage)
-                .pageSize(safeSize)
-                .totalCount(total == null ? 0 : total)
-                .build();
+        return PageResponse.response(items, param.getPage(), param.getPageSize(), total);
     }
 
 

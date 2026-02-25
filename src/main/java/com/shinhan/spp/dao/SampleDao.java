@@ -4,6 +4,7 @@ import com.shinhan.spp.domain.CommonCode;
 import com.shinhan.spp.domain.CommonGrpCode;
 import com.shinhan.spp.domain.UserInfo;
 import com.shinhan.spp.dto.cm.in.CommonCodeListParamDto;
+import com.shinhan.spp.dto.cm.in.CommonCodeSearchDto;
 import com.shinhan.spp.dto.cm.in.SampleInDto;
 import com.shinhan.spp.dto.cm.out.CommonCodeListDto;
 import com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto;
@@ -42,11 +43,7 @@ public interface SampleDao {
 
     Integer countCommonGrpCodeList(@Param("searchText") String searchText) throws Exception;
 
-    List<CommonGrpCodeListDto> selectCommonGrpCodeListPage(
-            @Param("searchText") String searchText,
-            @Param("offset") Integer offset,
-            @Param("limit") Integer limit
-    ) throws Exception;
+    List<CommonGrpCodeListDto> selectCommonGrpCodeListPage(CommonCodeSearchDto param) throws Exception;
     void insertCommonGrpCode(CommonGrpCode commonGrpCode) throws Exception;
     void updateCommonGrpCode(CommonGrpCode commonGrpCode) throws Exception;
     void deleteCommonGrpCode(@Param("comGrpCdSeq") Integer comGrpCdSeq) throws Exception;

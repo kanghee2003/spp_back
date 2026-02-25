@@ -53,7 +53,7 @@
         </if>
     </select>
 
-    <select id="selectCommonGrpCodeListPage" resultType="com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto">
+    <select id="selectCommonGrpCodeListPage" parameterType="com.shinhan.spp.dto.cm.in.CommonCodeSearchDto" resultType="com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto">
         SELECT com_grp_cd_seq ,
                cm_grp_cd ,
                cm_grp_nm ,

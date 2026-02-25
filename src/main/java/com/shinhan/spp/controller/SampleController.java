@@ -6,10 +6,12 @@ import com.shinhan.spp.domain.CommonGrpCode;
 import com.shinhan.spp.dto.DetailDto;
 import com.shinhan.spp.dto.SalesDto;
 import com.shinhan.spp.dto.SummaryDto;
+import com.shinhan.spp.dto.cm.in.CommonCodeSearchDto;
 import com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto;
 import com.shinhan.spp.dto.cm.out.CommonGrpCodePageDto;
 import com.shinhan.spp.dto.cm.out.FileUploadOutDto;
 import com.shinhan.spp.exception.custom.BusinessException;
+import com.shinhan.spp.model.PageResponse;
 import com.shinhan.spp.model.UserContext;
 import com.shinhan.spp.service.cm.FileService;
 import com.shinhan.spp.service.SampleService;
@@ -96,13 +98,8 @@ public class SampleController {
      * 서버 페이징 방식 목록 조회
      */
     @GetMapping("/grp-list-page")
-    public CommonGrpCodePageDto commonGrpCodeListPage(
-            @UserInfo UserContext user,
-            @RequestParam(required = false) String searchText,
-            @RequestParam(required = false, defaultValue = "1") Integer page,
-            @RequestParam(required = false, defaultValue = "10") Integer pageSize
-    ) throws Exception {
-        return sampleService.selectCommonGrpCodeListPage(searchText, page, pageSize);
+    public PageResponse<List<CommonGrpCodeListDto>> commonGrpCodeListPage(@UserInfo UserContext user, CommonCodeSearchDto param) throws Exception {
+        return sampleService.selectCommonGrpCodeListPage(param);
     }
 
     @PostMapping("/grp-save")
