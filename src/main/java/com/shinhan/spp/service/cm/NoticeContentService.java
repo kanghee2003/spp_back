@@ -36,7 +36,7 @@ public class NoticeContentService {
 
             int b = Utf8ChunkUtil.utf8Bytes(part);
             if (b > PART_MAX_BYTES) {
-                throw new BusinessException("CONTENT_PART byte overflow: " + b);
+                throw new BusinessException("part 사이즈가 2000Byte를 초과합니다.: " + b);
             }
 
             NoticeContentPart row = new NoticeContentPart();
