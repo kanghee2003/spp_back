@@ -1,8 +1,13 @@
 package com.shinhan.spp.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shinhan.spp.annotation.ApprovalAfterProcess;
+import com.shinhan.spp.annotation.validator.ApprovalMethodRegistry;
 import com.shinhan.spp.dao.SampleDao;
 import com.shinhan.spp.domain.CommonGrpCode;
 import com.shinhan.spp.domain.UserInfo;
+import com.shinhan.spp.dto.cm.ApprovalParam;
 import com.shinhan.spp.dto.cm.CommonCodeSaveDto;
 import com.shinhan.spp.dto.cm.in.CommonCodeListParamDto;
 import com.shinhan.spp.dto.cm.in.CommonCodeSearchDto;
@@ -17,6 +22,7 @@ import com.shinhan.spp.internal.service.UserContextEvictService;
 import com.shinhan.spp.model.PageRequest;
 import com.shinhan.spp.model.PageResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +33,13 @@ import java.util.List;
  * 샘플 API Service
  * @author 김강희
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SampleService {
     private final SampleDao sampleDao;
     private final UserContextEvictService userContextEvictService;
+
 
     /**
      * 수행내용
@@ -133,4 +141,12 @@ public class SampleService {
 
         }
     }
+
+    @ApprovalAfterProcess("A")
+    public void afterProcess(ApprovalParam param) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        log.debug(mapper.writeValueAsString(param));
+    }
+
+
 }

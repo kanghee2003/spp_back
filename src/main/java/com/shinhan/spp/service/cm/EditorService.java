@@ -1,5 +1,9 @@
 package com.shinhan.spp.service.cm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shinhan.spp.annotation.ApprovalAfterProcess;
+import com.shinhan.spp.dto.cm.ApprovalParam;
 import com.shinhan.spp.dto.cm.out.EditorImageUploadOutDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -137,4 +141,12 @@ public class EditorService {
         String u = uri.trim();
         return u.endsWith("/") ? u : u + "/";
     }
+
+
+    @ApprovalAfterProcess("B")
+    public void afterProcess(ApprovalParam param) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+//        log.debug(mapper.writeValueAsString(param));
+    }
+
 }
