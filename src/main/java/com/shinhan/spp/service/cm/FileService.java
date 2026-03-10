@@ -2,6 +2,8 @@ package com.shinhan.spp.service.cm;
 
 import com.shinhan.spp.dto.cm.out.FileUploadItemOutDto;
 import com.shinhan.spp.dto.cm.out.FileUploadOutDto;
+import com.shinhan.spp.exception.custom.BusinessException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -122,26 +124,27 @@ public class FileService {
                 .body(resource);
     }
 
-    private Path resolvePath(String filePathFromDb, String savedFileName) {
-        if (savedFileName == null || savedFileName.isBlank()) {
-            throw new IllegalArgumentException("SAVED_FILE_NAME이 없습니다.");
+    private Path resolvePath(String filePath, String savedFileName) {
+        if (StringUtils.isBlank(savedFileName)) {
+            throw new BusinessException("파일명이 없습니다.");
         }
 
-        String relDir = (filePathFromDb == null) ? "" : filePathFromDb.trim().replace("\\", "/");
-        while (relDir.startsWith("/")) relDir = relDir.substring(1);
+        if (savedFileName.contains("..") || savedFileName.contains("/") || savedFileName.contains("\\")) {
+            throw new BusinessException("잘못된 파일명입니다.");
+        }
 
-        Path dir = relDir.isEmpty()
-                ? uploadRootDir
-                : uploadRootDir.resolve(relDir).normalize();
+        if (StringUtils.isBlank(filePath)) {
+            throw new BusinessException("파일경로 정보가 없습니다.");
+        }
 
+        Path dir = Paths.get(filePath.trim()).toAbsolutePath().normalize();
         if (!dir.startsWith(uploadRootDir)) {
-            throw new IllegalArgumentException("FILE_PATH가 올바르지 않습니다.");
+            throw new BusinessException("파일 경로가 올바르지 않습니다.");
         }
 
         Path target = dir.resolve(savedFileName).normalize();
-
         if (!target.startsWith(dir)) {
-            throw new IllegalArgumentException("파일 경로가 올바르지 않습니다.");
+            throw new BusinessException("파일 경로가 올바르지 않습니다.");
         }
 
         return target;
