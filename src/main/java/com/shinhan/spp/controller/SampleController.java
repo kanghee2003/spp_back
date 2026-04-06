@@ -8,7 +8,6 @@ import com.shinhan.spp.dto.SalesDto;
 import com.shinhan.spp.dto.SummaryDto;
 import com.shinhan.spp.dto.cm.in.CommonCodeSearchDto;
 import com.shinhan.spp.dto.cm.out.CommonGrpCodeListDto;
-import com.shinhan.spp.dto.cm.out.CommonGrpCodePageDto;
 import com.shinhan.spp.dto.cm.out.FileUploadOutDto;
 import com.shinhan.spp.exception.custom.BusinessException;
 import com.shinhan.spp.model.PageResponse;
@@ -114,7 +113,7 @@ public class SampleController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Integer seq
     ) throws Exception {
-        return fileService.saveFiles(files, title, seq);
+        return fileService.uploadAndSaveFiles(files, title, seq);
     }
 
     @Operation(summary = "샘플 파일 다운로드", description = "샘플 파일 다운로드")
