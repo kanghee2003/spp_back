@@ -36,7 +36,7 @@ public class FileService {
         this.uploadRootDir = Paths.get(uploadDir).toAbsolutePath().normalize();
     }
 
-    public FileUploadOutDto saveFiles(List<MultipartFile> files, String title, Integer seq) throws IOException {
+    public FileUploadOutDto uploadAndSaveFiles(List<MultipartFile> files, String title, Integer seq) throws IOException {
         if (files == null || files.isEmpty() || files.stream().allMatch(f -> f == null || f.isEmpty())) {
             throw new IllegalArgumentException("파일이 없습니다.");
         }
