@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.ResponseEntity;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionResolver {
@@ -29,21 +32,31 @@ public class GlobalExceptionResolver {
                 .body(ApiResponse.ok(null, ec.getCode(), msg));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        ErrorCode ec = ErrorCode.INVALID_PARAMETER_ERROR;
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    ErrorCode ec = ErrorCode.INVALID_PARAMETER_ERROR;
 
-        String msg = ec.getMessage();
-        FieldError fe = e.getBindingResult().getFieldError();
-        if (fe != null) {
-            msg = fe.getField() + ": " + fe.getDefaultMessage();
+    String msg = ec.getMessage();
+
+    FieldError fe = e.getBindingResult().getFieldError();
+    if (fe != null) {
+        String field = fe.getField();
+        String defaultMessage = fe.getDefaultMessage();
+
+        Matcher matcher = Pattern.compile("\\[(\\d+)]").matcher(field);
+        if (matcher.find()) {
+            int rowIndex = Integer.parseInt(matcher.group(1)) + 1;
+            msg = rowIndex + "행: " + defaultMessage;
+        } else {
+            msg = defaultMessage;
         }
-
-        log.warn("ValidationError: {}", msg);
-        return ResponseEntity
-                .status(ec.getCode())
-                .body(ApiResponse.ok(null, ec.getCode(), msg));
     }
+
+    log.warn("ValidationError: {}", msg);
+    return ResponseEntity
+            .status(ec.getCode())
+            .body(ApiResponse.ok(null, ec.getCode(), msg));
+}
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
